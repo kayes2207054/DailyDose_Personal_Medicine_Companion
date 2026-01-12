@@ -24,7 +24,7 @@ import java.util.Locale;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "daily_dose.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;  // Incremented for new fields
 
     // Table names
     private static final String TABLE_MEDICINES = "medicines";
@@ -57,6 +57,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "dosage TEXT NOT NULL," +
                 "frequency TEXT NOT NULL," +
                 "instructions TEXT," +
+                "quantity INTEGER DEFAULT 0," +
                 "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
                 "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
 
@@ -105,9 +106,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "medicine_id INTEGER NOT NULL," +
                 "medicine_name TEXT NOT NULL," +
                 "stock_level INTEGER DEFAULT 0," +
-                "low_stock_threshold INTEGER DEFAULT 10," +
+                "daily_usage INTEGER DEFAULT 1," +
                 "last_refill_date TEXT," +
-                "next_refill_date TEXT," +
+                "estimated_refill_date TEXT," +
+                "notes TEXT," +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMPl_date TEXT," +
                 "notes TEXT," +
                 "FOREIGN KEY(medicine_id) REFERENCES " + TABLE_MEDICINES + "(id) ON DELETE CASCADE)");
 
@@ -136,14 +140,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         Log.d(TAG, "Database created successfully");
     }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NOTIFICATIONS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_GUARDIAN_PATIENT_LINKS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_INVENTORY);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_DOSE_HISTORY);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_REMINDERS);
+if (oldVersion < 2) {
+            // Add new columns for version 2
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_MEDICINES + " ADD COLUMN quantity INTEGER DEFAULT 0");
+            } catch (Exception e) {
+                Log.d(TAG, "Column quantity already exists or error: " + e.getMessage());
+            }
+            
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_INVENTORY + " ADD COLUMN daily_usage INTEGER DEFAULT 1");
+                db.execSQL("ALTER TABLE " + TABLE_INVENTORY + " ADD COLUMN estimated_refill_date TEXT");
+                db.execSQL("ALTER TABLE " + TABLE_INVENTORY + " ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+                db.execSQL("ALTER TABLE " + TABLE_INVENTORY + " ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+            } catch (Exception e) {
+                Log.d(TAG, "Column already exists or error: " + e.getMessage());
+            }
+        }
+        
+        // For other major changes, uncomment the following:
+        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_NOTIFICATIONS);
+        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_GUARDIAN_PATIENT_LINKS);
+        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_INVENTORY);
+        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_DOSE_HISTORY);
+        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_REMINDERS);
+        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEDICINES);
+        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
+        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_REMINDERS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEDICINES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         onCreate(db);
@@ -158,6 +181,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("dosage", medicine.getDosage());
         values.put("frequency", medicine.getFrequency());
         values.put("instructions", medicine.getInstructions());
+        values.put("quantity", medicine.getQuantity());
         
         long id = db.insert(TABLE_MEDICINES, null, values);
         Log.d(TAG, "Medicine added: " + medicine.getName() + ", ID: " + id);
@@ -171,6 +195,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("dosage", medicine.getDosage());
         values.put("frequency", medicine.getFrequency());
         values.put("instructions", medicine.getInstructions());
+        values.put("quantity", medicine.getQuantity());
         
         int rows = db.update(TABLE_MEDICINES, values, "id = ?", 
                 new String[]{String.valueOf(medicine.getId())});
@@ -197,6 +222,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 medicine.setDosage(cursor.getString(cursor.getColumnIndexOrThrow("dosage")));
                 medicine.setFrequency(cursor.getString(cursor.getColumnIndexOrThrow("frequency")));
                 medicine.setInstructions(cursor.getString(cursor.getColumnIndexOrThrow("instructions")));
+                
+                // Handle quantity column (may not exist in old databases)
+                int quantityIndex = cursor.getColumnIndex("quantity");
+                if (quantityIndex != -1) {
+                    medicine.setQuantity(cursor.getInt(quantityIndex));
+                }
+                
                 medicine.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow("created_at")));
                 medicines.add(medicine);
             } while (cursor.moveToNext());
@@ -421,8 +453,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("medicine_name", inventory.getMedicineName());
         values.put("stock_level", inventory.getStockLevel());
         values.put("low_stock_threshold", inventory.getLowStockThreshold());
+        values.put("daily_usage", inventory.getDailyUsage());
         values.put("last_refill_date", inventory.getLastRefillDate());
-        values.put("next_refill_date", inventory.getNextRefillDate());
+        values.put("estimated_refill_date", inventory.getEstimatedRefillDate());
         values.put("notes", inventory.getNotes());
         
         return db.insert(TABLE_INVENTORY, null, values);
@@ -433,9 +466,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put("stock_level", inventory.getStockLevel());
         values.put("low_stock_threshold", inventory.getLowStockThreshold());
+        values.put("daily_usage", inventory.getDailyUsage());
         values.put("last_refill_date", inventory.getLastRefillDate());
-        values.put("next_refill_date", inventory.getNextRefillDate());
+        values.put("estimated_refill_date", inventory.getEstimatedRefillDate());
         values.put("notes", inventory.getNotes());
+        values.put("updated_at", getCurrentDateTime());
         
         int rows = db.update(TABLE_INVENTORY, values, "id = ?", 
                 new String[]{String.valueOf(inventory.getId())});
@@ -463,9 +498,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         inventory.setMedicineName(cursor.getString(cursor.getColumnIndexOrThrow("medicine_name")));
         inventory.setStockLevel(cursor.getInt(cursor.getColumnIndexOrThrow("stock_level")));
         inventory.setLowStockThreshold(cursor.getInt(cursor.getColumnIndexOrThrow("low_stock_threshold")));
+        
+        // Handle new fields (may not exist in old databases)
+        int dailyUsageIndex = cursor.getColumnIndex("daily_usage");
+        if (dailyUsageIndex != -1) {
+            inventory.setDailyUsage(cursor.getInt(dailyUsageIndex));
+        }
+        
         inventory.setLastRefillDate(cursor.getString(cursor.getColumnIndexOrThrow("last_refill_date")));
-        inventory.setNextRefillDate(cursor.getString(cursor.getColumnIndexOrThrow("next_refill_date")));
+        
+        int estimatedRefillDateIndex = cursor.getColumnIndex("estimated_refill_date");
+        if (estimatedRefillDateIndex != -1) {
+            inventory.setEstimatedRefillDate(cursor.getString(estimatedRefillDateIndex));
+        }
+        
         inventory.setNotes(cursor.getString(cursor.getColumnIndexOrThrow("notes")));
+        
+        int createdAtIndex = cursor.getColumnIndex("created_at");
+        if (createdAtIndex != -1) {
+            inventory.setCreatedAt(cursor.getString(createdAtIndex));
+        }
+        
+        int updatedAtIndex = cursor.getColumnIndex("updated_at");
+        if (updatedAtIndex != -1) {
+            inventory.setUpdatedAt(cursor.getString(updatedAtIndex));
+        }
+        
         return inventory;
     }
 

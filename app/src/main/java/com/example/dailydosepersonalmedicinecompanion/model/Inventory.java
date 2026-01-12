@@ -4,26 +4,42 @@ import java.io.Serializable;
 
 /**
  * Inventory Model
- * Tracks medicine stock levels
+ * Tracks medicine stock levels with advanced features
  */
 public class Inventory implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int id;
     private int medicineId;
     private String medicineName;
-    private int stockLevel;
+    private int stockLevel;  // Also called quantity
     private int lowStockThreshold;
+    private int dailyUsage;  // Pills consumed per day (for refill estimation)
     private String lastRefillDate;
-    private String nextRefillDate;
+    private String estimatedRefillDate;  // Calculated based on daily usage
     private String notes;
+    private String createdAt;
+    private String updatedAt;
 
     public Inventory() {
+        this.lowStockThreshold = 10;  // Default threshold
+        this.dailyUsage = 1;  // Default daily usage
     }
 
     public Inventory(int medicineId, String medicineName, int stockLevel, int lowStockThreshold) {
+        this();
         this.medicineId = medicineId;
         this.medicineName = medicineName;
         this.stockLevel = stockLevel;
         this.lowStockThreshold = lowStockThreshold;
+    }
+
+    public Inventory(int medicineId, String medicineName, int stockLevel, int lowStockThreshold, int dailyUsage) {
+        this();
+        this.medicineId = medicineId;
+        this.medicineName = medicineName;
+        this.stockLevel = stockLevel;
+        this.lowStockThreshold = lowStockThreshold;
+        this.dailyUsage = dailyUsage;
     }
 
     // Getters and Setters
@@ -75,12 +91,36 @@ public class Inventory implements Serializable {
         this.lastRefillDate = lastRefillDate;
     }
 
-    public String getNextRefillDate() {
-        return nextRefillDate;
+    public String getEstimatedRefillDate() {
+        return estimatedRefillDate;
     }
 
-    public void setNextRefillDate(String nextRefillDate) {
-        this.nextRefillDate = nextRefillDate;
+    public void setEstimatedRefillDate(String estimatedRefillDate) {
+        this.estimatedRefillDate = estimatedRefillDate;
+    }
+
+    public int getDailyUsage() {
+        return dailyUsage;
+    }
+
+    public void setDailyUsage(int dailyUsage) {
+        this.dailyUsage = dailyUsage;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public String getNotes() {
@@ -91,17 +131,19 @@ public class Inventory implements Serializable {
         this.notes = notes;
     }
 
+    /**
+     * Decrease stock level when a dose is taken
+     */
+    public void decreaseQuantity(int amount) {
+        this.stockLevel = Math.max(0, this.stockLevel - amount);
+    }
+
     public boolean isLowStock() {
         return stockLevel <= lowStockThreshold;
     }
 
     @Override
     public String toString() {
-        return "Inventory{" +
-                "id=" + id +
-                ", medicineName='" + medicineName + '\'' +
-                ", stockLevel=" + stockLevel +
-                ", lowStockThreshold=" + lowStockThreshold +
-                '}';
+        return medicineName + " - " + stockLevel + " pills (Refill: " + estimatedRefillDate + ")";
     }
 }

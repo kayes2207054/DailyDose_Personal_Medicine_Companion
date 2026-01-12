@@ -7,25 +7,39 @@ import java.io.Serializable;
  * Represents a medicine with dosage, frequency and instructions
  */
 public class Medicine implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int id;
     private String name;
     private String dosage;
     private String frequency;
     private String instructions;
+    private int quantity;  // New field for medicine quantity/stock
     private String createdAt;
     private String updatedAt;
 
     public Medicine() {
+        this.quantity = 0;  // Default quantity
     }
 
     public Medicine(String name, String dosage, String frequency, String instructions) {
+        this();
         this.name = name;
         this.dosage = dosage;
         this.frequency = frequency;
         this.instructions = instructions;
     }
 
+    public Medicine(String name, String dosage, String frequency, String instructions, int quantity) {
+        this();
+        this.name = name;
+        this.dosage = dosage;
+        this.frequency = frequency;
+        this.instructions = instructions;
+        this.quantity = quantity;
+    }
+
     public Medicine(int id, String name, String dosage, String frequency, String instructions) {
+        this();
         this.id = id;
         this.name = name;
         this.dosage = dosage;
@@ -90,14 +104,29 @@ public class Medicine implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
     @Override
     public String toString() {
-        return "Medicine{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", dosage='" + dosage + '\'' +
-                ", frequency='" + frequency + '\'' +
-                ", instructions='" + instructions + '\'' +
-                '}';
+        return name + " (" + dosage + " - " + frequency + " times/day)";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Medicine medicine = (Medicine) obj;
+        return id == medicine.id || (name != null && name.equals(medicine.name));
+    }
+
+    @Override
+    public int hashCode() {
+        return id != 0 ? Integer.hashCode(id) : (name != null ? name.hashCode() : 0);
     }
 }
