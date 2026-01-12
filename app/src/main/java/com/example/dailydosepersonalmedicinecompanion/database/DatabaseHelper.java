@@ -111,8 +111,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "estimated_refill_date TEXT," +
                 "notes TEXT," +
                 "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMPl_date TEXT," +
-                "notes TEXT," +
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
                 "FOREIGN KEY(medicine_id) REFERENCES " + TABLE_MEDICINES + "(id) ON DELETE CASCADE)");
 
         // Create Guardian-Patient Links table
@@ -140,7 +139,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         Log.d(TAG, "Database created successfully");
     }
-if (oldVersion < 2) {
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion < 2) {
             // Add new columns for version 2
             try {
                 db.execSQL("ALTER TABLE " + TABLE_MEDICINES + " ADD COLUMN quantity INTEGER DEFAULT 0");
@@ -167,9 +169,9 @@ if (oldVersion < 2) {
         // db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEDICINES);
         // db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         // db.execSQL("DROP TABLE IF EXISTS " + TABLE_REMINDERS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEDICINES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
-        onCreate(db);
+        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEDICINES);
+        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
+        // onCreate(db);
     }
 
     // ============= MEDICINE OPERATIONS =============
