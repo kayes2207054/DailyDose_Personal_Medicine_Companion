@@ -39,15 +39,20 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         holder.tvMedicine.setText(history.getMedicineName());
         holder.tvDate.setText(history.getDate());
         holder.tvTime.setText(history.getTime());
-        holder.tvStatus.setText(history.getStatus());
 
-        // Color code by status
+        // Set status icon and color
         if ("TAKEN".equals(history.getStatus())) {
-            holder.tvStatus.setTextColor(Color.GREEN);
+            holder.tvStatus.setText("✓");
+            holder.tvStatus.setTextColor(Color.parseColor("#4CAF50")); // Green
         } else if ("MISSED".equals(history.getStatus())) {
-            holder.tvStatus.setTextColor(Color.RED);
+            holder.tvStatus.setText("✗");
+            holder.tvStatus.setTextColor(Color.parseColor("#F44336")); // Red
+        } else if ("SNOOZED".equals(history.getStatus())) {
+            holder.tvStatus.setText("⏰");
+            holder.tvStatus.setTextColor(Color.parseColor("#FF9800")); // Orange
         } else {
-            holder.tvStatus.setTextColor(Color.GRAY);
+            holder.tvStatus.setText("○");
+            holder.tvStatus.setTextColor(Color.parseColor("#9E9E9E")); // Gray
         }
     }
 
