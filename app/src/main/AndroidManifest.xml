@@ -36,6 +36,12 @@
         <activity
             android:name=".activity.DashboardActivity"
             android:exported="false" />
+        
+        <!-- User Profile Activity -->
+        <activity
+            android:name=".activity.UserProfileActivity"
+            android:exported="false"
+            android:parentActivityName=".activity.DashboardActivity" />
             
     </application>
 

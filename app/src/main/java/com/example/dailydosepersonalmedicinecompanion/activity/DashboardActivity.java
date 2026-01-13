@@ -1,11 +1,15 @@
 package com.example.dailydosepersonalmedicinecompanion.activity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
@@ -95,5 +99,66 @@ public class DashboardActivity extends AppCompatActivity {
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.dashboard_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.action_profile) {
+            // Navigate to User Profile
+            startActivity(new Intent(this, UserProfileActivity.class));
+            return true;
+        } else if (itemId == R.id.action_contact) {
+            // Send email to support
+            sendSupportEmail();
+            return true;
+        } else if (itemId == R.id.action_logout) {
+            // Show logout confirmation
+            showLogoutDialog();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void sendSupportEmail() {
+        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+        emailIntent.setData(Uri.parse("mailto:anonymous091119@gmail.com"));
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Daily Dose - Support Request");
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello Support Team,\n\nI need assistance with:\n\n");
+
+        try {
+            startActivity(Intent.createChooser(emailIntent, "Send email via..."));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "No email app installed", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showLogoutDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setPositiveButton("Logout", (dialog, which) -> {
+                    // Clear current user
+                    UserController userController = new UserController(this);
+                    userController.logout();
+                    
+                    // Navigate to login
+                    Intent intent = new Intent(this, LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                    
+                    Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }

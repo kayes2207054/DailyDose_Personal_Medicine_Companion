@@ -56,4 +56,40 @@ public class UserController {
         // Check if database has no users yet
         return dbHelper.getUserByUsername("admin") == null;
     }
+
+    /**
+     * Update user profile information
+     * @param user User object with updated information
+     * @param currentPassword Current password (required if changing password)
+     * @param newPassword New password (null if not changing)
+     * @return true if update successful, false otherwise
+     */
+    public boolean updateUserProfile(User user, String currentPassword, String newPassword) {
+        // If password change is requested, verify current password
+        if (newPassword != null && !newPassword.isEmpty()) {
+            if (currentPassword == null || currentPassword.isEmpty()) {
+                return false;
+            }
+            
+            // Verify current password
+            User verifiedUser = dbHelper.authenticateUser(user.getUsername(), currentPassword);
+            if (verifiedUser == null) {
+                return false; // Current password is incorrect
+            }
+            
+            // Hash new password and update user object
+            String hashedPassword = DatabaseHelper.hashPassword(newPassword);
+            user.setPasswordHash(hashedPassword);
+        }
+        
+        // Update user in database
+        boolean success = dbHelper.updateUser(user);
+        
+        // Update current user in session if successful
+        if (success) {
+            currentUser = user;
+        }
+        
+        return success;
+    }
 }

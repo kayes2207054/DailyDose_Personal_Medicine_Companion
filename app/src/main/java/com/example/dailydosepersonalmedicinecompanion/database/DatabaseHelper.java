@@ -443,6 +443,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return user;
     }
 
+    public boolean updateUser(User user) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("password_hash", user.getPasswordHash());
+        values.put("full_name", user.getFullName());
+        values.put("email", user.getEmail());
+        values.put("active", user.isActive() ? 1 : 0);
+        
+        int rowsAffected = db.update(TABLE_USERS, values, "id = ?", 
+                new String[]{String.valueOf(user.getId())});
+        return rowsAffected > 0;
+    }
+
     private User cursorToUser(Cursor cursor) {
         User user = new User();
         user.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));
