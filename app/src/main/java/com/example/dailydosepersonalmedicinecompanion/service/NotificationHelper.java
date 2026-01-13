@@ -49,7 +49,7 @@ public class NotificationHelper {
         PendingIntent snoozeIntent = createActionIntent(reminder, "SNOOZE");
         PendingIntent missIntent = createActionIntent(reminder, "MISS");
 
-        // Build notification
+        // Build notification with proper sound settings
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle("💊 Medicine Reminder")
@@ -58,13 +58,14 @@ public class NotificationHelper {
                         .bigText("Time to take: " + reminder.getMedicineName() + "\n" +
                                 "Time: " + reminder.getTime() + "\n" +
                                 "Tap an action below"))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setAutoCancel(false)
                 .setOngoing(true)
                 .setContentIntent(pendingIntent)
                 .setSound(getNotificationSound())
                 .setVibrate(new long[]{0, 500, 250, 500})
+                .setDefaults(NotificationCompat.DEFAULT_SOUND | NotificationCompat.DEFAULT_VIBRATE)
                 // Action buttons
                 .addAction(R.drawable.ic_check, "✓ TAKEN", takenIntent)
                 .addAction(R.drawable.ic_snooze, "⏰ SNOOZE", snoozeIntent)
@@ -128,6 +129,14 @@ public class NotificationHelper {
             channel.enableLights(true);
             channel.setShowBadge(true);
             channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+            
+            // Enable sound for the channel
+            Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+            android.media.AudioAttributes audioAttributes = new android.media.AudioAttributes.Builder()
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+                    .build();
+            channel.setSound(soundUri, audioAttributes);
 
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(channel);
