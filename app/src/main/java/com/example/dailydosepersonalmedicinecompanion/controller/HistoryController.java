@@ -59,12 +59,36 @@ public class HistoryController {
     public int getTotalDosesMissed() {
         return getMissedHistory().size();
     }
+    
+    public int getTodayDosesTaken() {
+        return (int) getTodayHistory().stream()
+                .filter(h -> h.getStatus().equals("TAKEN"))
+                .count();
+    }
+    
+    public int getTodayDosesMissed() {
+        return (int) getTodayHistory().stream()
+                .filter(h -> h.getStatus().equals("MISSED"))
+                .count();
+    }
+    
+    public int getTodayTotalDoses() {
+        return getTodayHistory().size();
+    }
 
     public double getAdherenceRate() {
         int total = getAllHistory().size();
         if (total == 0) return 0.0;
         int taken = getTotalDosesTaken();
         return (taken * 100.0) / total;
+    }
+    
+    public int getActiveDays() {
+        // Get unique dates from history
+        return (int) getAllHistory().stream()
+                .map(DoseHistory::getDate)
+                .distinct()
+                .count();
     }
 
     public List<DoseHistory> getRecentHistory(int days) {

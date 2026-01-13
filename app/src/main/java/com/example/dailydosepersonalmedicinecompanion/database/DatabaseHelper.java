@@ -24,7 +24,7 @@ import java.util.Locale;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "daily_dose.db";
-    private static final int DATABASE_VERSION = 2;  // Incremented for new fields
+    private static final int DATABASE_VERSION = 3;  // Incremented for low_stock_threshold fix
 
     // Table names
     private static final String TABLE_MEDICINES = "medicines";
@@ -106,6 +106,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "medicine_id INTEGER NOT NULL," +
                 "medicine_name TEXT NOT NULL," +
                 "stock_level INTEGER DEFAULT 0," +
+                "low_stock_threshold INTEGER DEFAULT 10," +
                 "daily_usage INTEGER DEFAULT 1," +
                 "last_refill_date TEXT," +
                 "estimated_refill_date TEXT," +
@@ -157,6 +158,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 db.execSQL("ALTER TABLE " + TABLE_INVENTORY + " ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
             } catch (Exception e) {
                 Log.d(TAG, "Column already exists or error: " + e.getMessage());
+            }
+        }
+        
+        if (oldVersion < 3) {
+            // Add low_stock_threshold column for version 3
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_INVENTORY + " ADD COLUMN low_stock_threshold INTEGER DEFAULT 10");
+            } catch (Exception e) {
+                Log.d(TAG, "Column low_stock_threshold already exists or error: " + e.getMessage());
             }
         }
         
