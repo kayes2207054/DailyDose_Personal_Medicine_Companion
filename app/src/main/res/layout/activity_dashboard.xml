@@ -5,16 +5,27 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- Toolbar with welcome message and menu -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        app:title="Daily Dose"
+        app:titleTextColor="@android:color/white"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
     <TextView
         android:id="@+id/tv_welcome"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Welcome"
-        android:textSize="20sp"
+        android:textSize="16sp"
         android:textStyle="bold"
-        android:padding="16dp"
-        android:background="?attr/colorPrimary"
-        android:textColor="@android:color/white" />
+        android:padding="12dp"
+        android:background="#E3F2FD"
+        android:textColor="#1976D2" />
 
     <FrameLayout
         android:id="@+id/fragment_container"

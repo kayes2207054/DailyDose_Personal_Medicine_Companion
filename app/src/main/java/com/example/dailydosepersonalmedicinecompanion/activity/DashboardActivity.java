@@ -25,6 +25,7 @@ import com.example.dailydosepersonalmedicinecompanion.fragment.InventoryFragment
 import com.example.dailydosepersonalmedicinecompanion.fragment.MedicineFragment;
 import com.example.dailydosepersonalmedicinecompanion.fragment.ReminderFragment;
 import com.example.dailydosepersonalmedicinecompanion.model.User;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
@@ -32,6 +33,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  * Main dashboard with bottom navigation
  */
 public class DashboardActivity extends AppCompatActivity {
+    private MaterialToolbar toolbar;
     private TextView tvWelcome;
     private BottomNavigationView bottomNav;
 
@@ -44,6 +46,10 @@ public class DashboardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
+
+        // Set up toolbar
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         // Initialize controllers
         medicineController = new MedicineController(this);
