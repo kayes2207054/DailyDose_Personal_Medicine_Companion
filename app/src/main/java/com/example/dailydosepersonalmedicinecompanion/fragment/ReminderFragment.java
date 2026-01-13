@@ -21,8 +21,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dailydosepersonalmedicinecompanion.R;
 import com.example.dailydosepersonalmedicinecompanion.adapter.ReminderAdapter;
+import com.example.dailydosepersonalmedicinecompanion.controller.HistoryController;
 import com.example.dailydosepersonalmedicinecompanion.controller.MedicineController;
 import com.example.dailydosepersonalmedicinecompanion.controller.ReminderController;
+import com.example.dailydosepersonalmedicinecompanion.database.DatabaseHelper;
+import com.example.dailydosepersonalmedicinecompanion.model.DoseHistory;
 import com.example.dailydosepersonalmedicinecompanion.model.Medicine;
 import com.example.dailydosepersonalmedicinecompanion.model.Reminder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -41,6 +44,7 @@ public class ReminderFragment extends Fragment {
     private ReminderAdapter adapter;
     private ReminderController reminderController;
     private MedicineController medicineController;
+    private HistoryController historyController;
 
     @Nullable
     @Override
@@ -49,12 +53,13 @@ public class ReminderFragment extends Fragment {
 
         reminderController = new ReminderController(requireContext());
         medicineController = new MedicineController(requireContext());
+        historyController = new HistoryController(requireContext());
 
         recyclerView = view.findViewById(R.id.recycler_reminders);
         fabAdd = view.findViewById(R.id.fab_add_reminder);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new ReminderAdapter(reminderController.getAllReminders(), 
+        adapter = new ReminderAdapter(reminderController.getPendingReminders(), 
             this::markAsTaken, this::deleteReminder);
         recyclerView.setAdapter(adapter);
 
@@ -122,8 +127,21 @@ public class ReminderFragment extends Fragment {
     }
 
     private void markAsTaken(Reminder reminder) {
-        if (reminderController.markReminderAsTaken(reminder.getId())) {
-            Toast.makeText(requireContext(), "Marked as taken", Toast.LENGTH_SHORT).show();
+        // Add to dose history
+        DoseHistory history = new DoseHistory();
+        history.setMedicineId(reminder.getMedicineId());
+        history.setReminderId(reminder.getId());
+        history.setMedicineName(reminder.getMedicineName());
+        history.setDate(DatabaseHelper.getCurrentDate());
+        history.setTime(DatabaseHelper.getCurrentTime());
+        history.setStatus("TAKEN");
+        history.setNotes("Marked from reminder list");
+        
+        historyController.addHistory(history);
+        
+        // Delete the reminder (it's now in history)
+        if (reminderController.deleteReminder(reminder.getId())) {
+            Toast.makeText(requireContext(), "✓ Marked as taken", Toast.LENGTH_SHORT).show();
             refreshList();
         }
     }
@@ -143,7 +161,7 @@ public class ReminderFragment extends Fragment {
     }
 
     private void refreshList() {
-        adapter.updateList(reminderController.getAllReminders());
+        adapter.updateList(reminderController.getPendingReminders());
     }
 
     @Override

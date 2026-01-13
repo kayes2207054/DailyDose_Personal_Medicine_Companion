@@ -64,22 +64,22 @@ public class ReminderActionReceiver extends BroadcastReceiver {
                            String medicineName, ReminderController reminderController,
                            HistoryController historyController, NotificationHelper notificationHelper) {
         
-        // Mark reminder as taken
-        boolean success = reminderController.markReminderAsTaken(reminderId);
+        // Add to dose history
+        DoseHistory history = new DoseHistory();
+        history.setMedicineId(medicineId);
+        history.setReminderId(reminderId);
+        history.setMedicineName(medicineName);
+        history.setDate(DatabaseHelper.getCurrentDate());
+        history.setTime(DatabaseHelper.getCurrentTime());
+        history.setStatus("TAKEN");
+        history.setNotes("Marked from notification");
+        
+        historyController.addHistory(history);
+        
+        // Delete the reminder (it's now in history)
+        boolean success = reminderController.deleteReminder(reminderId);
         
         if (success) {
-            // Add to dose history
-            DoseHistory history = new DoseHistory();
-            history.setMedicineId(medicineId);
-            history.setReminderId(reminderId);
-            history.setMedicineName(medicineName);
-            history.setDate(DatabaseHelper.getCurrentDate());
-            history.setTime(DatabaseHelper.getCurrentTime());
-            history.setStatus("TAKEN");
-            history.setNotes("Marked from notification");
-            
-            historyController.addHistory(history);
-            
             // Cancel notification
             notificationHelper.cancelNotification(reminderId);
             
@@ -87,7 +87,7 @@ public class ReminderActionReceiver extends BroadcastReceiver {
             Toast.makeText(context, "✓ Marked as TAKEN: " + medicineName, 
                           Toast.LENGTH_SHORT).show();
             
-            Log.d(TAG, "Reminder " + reminderId + " marked as TAKEN");
+            Log.d(TAG, "Reminder " + reminderId + " marked as TAKEN and removed from reminders");
         }
     }
 
@@ -140,22 +140,22 @@ public class ReminderActionReceiver extends BroadcastReceiver {
                           String medicineName, ReminderController reminderController,
                           HistoryController historyController, NotificationHelper notificationHelper) {
         
-        // Mark reminder as missed
-        boolean success = reminderController.markReminderAsMissed(reminderId);
+        // Add to dose history
+        DoseHistory history = new DoseHistory();
+        history.setMedicineId(medicineId);
+        history.setReminderId(reminderId);
+        history.setMedicineName(medicineName);
+        history.setDate(DatabaseHelper.getCurrentDate());
+        history.setTime(DatabaseHelper.getCurrentTime());
+        history.setStatus("MISSED");
+        history.setNotes("Marked from notification");
+        
+        historyController.addHistory(history);
+        
+        // Delete the reminder (it's now in history)
+        boolean success = reminderController.deleteReminder(reminderId);
         
         if (success) {
-            // Add to dose history
-            DoseHistory history = new DoseHistory();
-            history.setMedicineId(medicineId);
-            history.setReminderId(reminderId);
-            history.setMedicineName(medicineName);
-            history.setDate(DatabaseHelper.getCurrentDate());
-            history.setTime(DatabaseHelper.getCurrentTime());
-            history.setStatus("MISSED");
-            history.setNotes("Marked from notification");
-            
-            historyController.addHistory(history);
-            
             // Cancel notification
             notificationHelper.cancelNotification(reminderId);
             
@@ -163,7 +163,7 @@ public class ReminderActionReceiver extends BroadcastReceiver {
             Toast.makeText(context, "✗ Marked as MISSED: " + medicineName,
                           Toast.LENGTH_SHORT).show();
             
-            Log.d(TAG, "Reminder " + reminderId + " marked as MISSED");
+            Log.d(TAG, "Reminder " + reminderId + " marked as MISSED and removed from reminders");
         }
     }
 }
