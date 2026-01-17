@@ -1,0 +1,55 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Background: A soft circular backing (often used in adaptive icons) -->
+    <path
+        android:fillColor="#E3F2FD"
+        android:pathData="M54,54m-48,0a48,48 0 1,1 96,0a48,48 0 1,1 -96,0" />
+
+    <!-- Group for the central icon to center and scale it -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.65"
+        android:scaleY="0.65">
+        
+        <!-- The Pill: Bottom Half (Blue) -->
+        <!-- Rotated capsule shape -->
+        <path
+            android:fillColor="#1976D2"
+            android:pathData="M78.6,29.4 L78.6,29.4 c-4.7,-4.7 -12.3,-4.7 -17,0 L36.9,54.1 c-0.6,0.6 -0.6,1.5 0,2.1 l14.9,14.9 c0.6,0.6 1.5,0.6 2.1,0 l24.7,-24.7 C83.3,41.7 83.3,34.1 78.6,29.4 z"/>
+
+        <!-- The Pill: Top Half (White/Light) -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M29.4,78.6 L29.4,78.6 c4.7,4.7 12.3,4.7 17,0 L71.1,53.9 c0.6,-0.6 0.6,-1.5 0,-2.1 L56.2,36.9 c-0.6,-0.6 -1.5,-0.6 -2.1,0 L29.4,61.6 C24.7,66.3 24.7,73.9 29.4,78.6 z"/>
+
+        <!-- Clock Detail: Symbolizing "Daily" / Time -->
+        <!-- A subtle clock face ring in the background or floating hands -->
+        <group>
+             <!-- Clock Hand (Minute) -->
+             <path
+                 android:fillColor="#FF5252"
+                 android:pathData="M54,54 L54,35"
+                 android:strokeWidth="4"
+                 android:strokeColor="#FF5252"
+                 android:strokeLineCap="round"/>
+             
+             <!-- Clock Hand (Hour) -->
+             <path
+                 android:fillColor="#FF5252"
+                 android:pathData="M54,54 L65,54"
+                 android:strokeWidth="4"
+                 android:strokeColor="#FF5252"
+                 android:strokeLineCap="round"/>
+                 
+             <!-- Center Dot -->
+             <path
+                 android:fillColor="#D32F2F"
+                 android:pathData="M54,54m-3,0a3,3 0 1,1 6,0a3,3 0 1,1 -6,0" />
+        </group>
+    </group>
+</vector>

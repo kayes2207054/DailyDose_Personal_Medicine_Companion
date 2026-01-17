@@ -37,6 +37,15 @@ public class NotificationHelper {
      * Show interactive notification for a reminder
      */
     public void showReminderNotification(Reminder reminder) {
+        // Full screen intent to wake up the device and show notification
+        Intent fullScreenIntent = new Intent(context, DashboardActivity.class);
+        fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        fullScreenIntent.putExtra("reminderId", reminder.getId());
+        PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(
+                context, reminder.getId(), fullScreenIntent, 
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
         // Main notification intent (opens app)
         Intent intent = new Intent(context, DashboardActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -49,7 +58,7 @@ public class NotificationHelper {
         PendingIntent snoozeIntent = createActionIntent(reminder, "SNOOZE");
         PendingIntent missIntent = createActionIntent(reminder, "MISS");
 
-        // Build notification with proper sound settings
+        // Build notification with proper sound settings and full screen intent
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle("💊 Medicine Reminder")
@@ -63,9 +72,10 @@ public class NotificationHelper {
                 .setAutoCancel(false)
                 .setOngoing(true)
                 .setContentIntent(pendingIntent)
+                .setFullScreenIntent(fullScreenPendingIntent, true)
                 .setSound(getNotificationSound())
-                .setVibrate(new long[]{0, 500, 250, 500})
-                .setDefaults(NotificationCompat.DEFAULT_SOUND | NotificationCompat.DEFAULT_VIBRATE)
+                .setVibrate(new long[]{0, 1000, 500, 1000, 500, 1000})
+                .setLights(0xFF0000FF, 1000, 500)
                 // Action buttons
                 .addAction(R.drawable.ic_check, "✓ TAKEN", takenIntent)
                 .addAction(R.drawable.ic_snooze, "⏰ SNOOZE", snoozeIntent)

@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.example.dailydosepersonalmedicinecompanion.database.DatabaseHelper;
 import com.example.dailydosepersonalmedicinecompanion.model.Reminder;
+import com.example.dailydosepersonalmedicinecompanion.service.AlarmScheduler;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,13 +15,21 @@ import java.util.stream.Collectors;
  */
 public class ReminderController {
     private final DatabaseHelper dbHelper;
+    private final AlarmScheduler alarmScheduler;
 
     public ReminderController(Context context) {
         this.dbHelper = DatabaseHelper.getInstance(context);
+        this.alarmScheduler = new AlarmScheduler(context);
     }
 
     public long addReminder(Reminder reminder) {
-        return dbHelper.addReminder(reminder);
+        long id = dbHelper.addReminder(reminder);
+        if (id > 0) {
+            // Set the ID and schedule alarm
+            reminder.setId((int) id);
+            alarmScheduler.scheduleAlarm(reminder);
+        }
+        return id;
     }
 
     public boolean updateReminder(Reminder reminder) {
@@ -28,7 +37,13 @@ public class ReminderController {
     }
 
     public boolean deleteReminder(int reminderId) {
+        // Cancel alarm before deleting
+        alarmScheduler.cancelAlarm(reminderId);
         return dbHelper.deleteReminder(reminderId);
+    }
+    
+    public Reminder getReminderById(int reminderId) {
+        return dbHelper.getReminderById(reminderId);
     }
 
     public List<Reminder> getAllReminders() {

@@ -55,8 +55,12 @@ public class ReminderService extends Service {
         // Create notification channel
         createNotificationChannel();
         
-        // Start as foreground service
-        startForeground(1, createForegroundNotification());
+        // Start as foreground service (with try-catch for compatibility)
+        try {
+            startForeground(1, createForegroundNotification());
+        } catch (Exception e) {
+            Log.e(TAG, "Could not start foreground service", e);
+        }
         
         // Initialize reminder checker
         reminderChecker = new Runnable() {

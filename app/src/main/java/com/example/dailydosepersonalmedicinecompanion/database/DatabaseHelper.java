@@ -340,6 +340,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return reminders;
     }
 
+    public Reminder getReminderById(int reminderId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_REMINDERS, null, "id = ?", 
+                new String[]{String.valueOf(reminderId)}, null, null, null);
+
+        Reminder reminder = null;
+        if (cursor.moveToFirst()) {
+            reminder = cursorToReminder(cursor);
+        }
+        cursor.close();
+        return reminder;
+    }
+
     private Reminder cursorToReminder(Cursor cursor) {
         Reminder reminder = new Reminder();
         reminder.setId(cursor.getInt(cursor.getColumnIndexOrThrow("id")));

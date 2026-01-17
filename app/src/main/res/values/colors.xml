@@ -2,4 +2,34 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Primary Brand Colors -->
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#0D47A1</color>
+    <color name="primary_light">#BBDEFB</color>
+    <color name="accent">#FF5252</color>
+    
+    <!-- Medical Theme Colors -->
+    <color name="medical_blue">#1976D2</color>
+    <color name="medical_light_blue">#E3F2FD</color>
+    <color name="health_green">#43A047</color>
+    <color name="health_light_green">#E8F5E9</color>
+    <color name="warning_orange">#FB8C00</color>
+    <color name="alert_red">#E53935</color>
+    
+    <!-- Background Colors -->
+    <color name="background_light">#F5F5F5</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="surface">#FFFFFF</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#9E9E9E</color>
+    
+    <!-- Status Colors -->
+    <color name="status_taken">#4CAF50</color>
+    <color name="status_missed">#F44336</color>
+    <color name="status_pending">#FF9800</color>
+    <color name="status_snoozed">#2196F3</color>
 </resources>

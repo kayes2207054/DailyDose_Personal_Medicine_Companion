@@ -11,6 +11,7 @@ import com.example.dailydosepersonalmedicinecompanion.controller.ReminderControl
 import com.example.dailydosepersonalmedicinecompanion.database.DatabaseHelper;
 import com.example.dailydosepersonalmedicinecompanion.model.DoseHistory;
 import com.example.dailydosepersonalmedicinecompanion.model.Reminder;
+import com.example.dailydosepersonalmedicinecompanion.service.AlarmScheduler;
 import com.example.dailydosepersonalmedicinecompanion.service.NotificationHelper;
 
 import java.util.Calendar;
@@ -109,6 +110,10 @@ public class ReminderActionReceiver extends BroadcastReceiver {
         }
         
         if (reminder != null) {
+            // Cancel old alarm first
+            AlarmScheduler alarmScheduler = new AlarmScheduler(context);
+            alarmScheduler.cancelAlarm(reminderId);
+            
             // Calculate new time (5 minutes from now)
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MINUTE, 5);
@@ -121,6 +126,9 @@ public class ReminderActionReceiver extends BroadcastReceiver {
             reminder.setTime(newTime);
             reminder.setNotes("Snoozed at " + DatabaseHelper.getCurrentTime());
             reminderController.updateReminder(reminder);
+            
+            // Schedule new alarm
+            alarmScheduler.scheduleAlarm(reminder);
             
             // Cancel current notification
             notificationHelper.cancelNotification(reminderId);

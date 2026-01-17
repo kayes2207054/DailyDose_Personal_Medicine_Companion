@@ -1,8 +1,15 @@
 package com.example.dailydosepersonalmedicinecompanion.activity;
 
+import android.Manifest;
+import android.app.AlarmManager;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -11,6 +18,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.dailydosepersonalmedicinecompanion.R;
@@ -25,6 +34,7 @@ import com.example.dailydosepersonalmedicinecompanion.fragment.InventoryFragment
 import com.example.dailydosepersonalmedicinecompanion.fragment.MedicineFragment;
 import com.example.dailydosepersonalmedicinecompanion.fragment.ReminderFragment;
 import com.example.dailydosepersonalmedicinecompanion.model.User;
+import com.example.dailydosepersonalmedicinecompanion.service.ReminderService;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -33,6 +43,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  * Main dashboard with bottom navigation
  */
 public class DashboardActivity extends AppCompatActivity {
+    private static final int REQUEST_NOTIFICATION_PERMISSION = 100;
+    private static final int REQUEST_EXACT_ALARM_PERMISSION = 101;
+    
     private MaterialToolbar toolbar;
     private TextView tvWelcome;
     private BottomNavigationView bottomNav;
@@ -65,6 +78,17 @@ public class DashboardActivity extends AppCompatActivity {
             tvWelcome.setText("Welcome, " + currentUser.getFullName());
         }
 
+        // Request necessary permissions for notifications and alarms
+        requestNotificationPermissions();
+
+        // Start Reminder Service (with try-catch for safety)
+        try {
+            startReminderService();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Note: Background reminder service could not start", Toast.LENGTH_SHORT).show();
+        }
+
         bottomNav.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
 
@@ -95,6 +119,18 @@ public class DashboardActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new DashboardFragment())
                     .commit();
+        }
+    }
+
+    /**
+     * Start the background reminder service
+     */
+    private void startReminderService() {
+        Intent serviceIntent = new Intent(this, ReminderService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
         }
     }
 
@@ -166,5 +202,83 @@ public class DashboardActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    /**
+     * Request notification and alarm permissions
+     */
+    private void requestNotificationPermissions() {
+        // Request POST_NOTIFICATIONS permission for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        REQUEST_NOTIFICATION_PERMISSION);
+            } else {
+                checkExactAlarmPermission();
+            }
+        } else {
+            checkExactAlarmPermission();
+        }
+    }
+
+    /**
+     * Check and request exact alarm permission
+     */
+    private void checkExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Permission Required")
+                        .setMessage("This app needs permission to schedule exact alarms for medicine reminders. Please enable it in settings.")
+                        .setPositiveButton("Open Settings", (dialog, which) -> {
+                            Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                            intent.setData(Uri.parse("package:" + getPackageName()));
+                            startActivity(intent);
+                        })
+                        .setNegativeButton("Later", null)
+                        .show();
+            } else {
+                checkNotificationPolicyAccess();
+            }
+        } else {
+            checkNotificationPolicyAccess();
+        }
+    }
+
+    /**
+     * Check if app can bypass Do Not Disturb mode
+     */
+    private void checkNotificationPolicyAccess() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null && !notificationManager.isNotificationPolicyAccessGranted()) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Do Not Disturb Access")
+                        .setMessage("Allow this app to override Do Not Disturb mode so medicine reminders always play sound?")
+                        .setPositiveButton("Allow", (dialog, which) -> {
+                            Intent intent = new Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+                            startActivity(intent);
+                        })
+                        .setNegativeButton("Skip", null)
+                        .show();
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        if (requestCode == REQUEST_NOTIFICATION_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show();
+                checkExactAlarmPermission();
+            } else {
+                Toast.makeText(this, "Notification permission denied. Reminders may not work properly.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 }

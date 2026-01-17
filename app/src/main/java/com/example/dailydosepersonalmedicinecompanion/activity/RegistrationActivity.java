@@ -19,7 +19,7 @@ import com.example.dailydosepersonalmedicinecompanion.controller.UserController;
 public class RegistrationActivity extends AppCompatActivity {
     private EditText etFullName, etEmail, etUsername, etPassword, etConfirmPassword;
     private RadioGroup rgRole;
-    private Button btnRegister;
+    private Button btnRegister, btnBackToLogin;
     private UserController userController;
 
     @Override
@@ -36,8 +36,10 @@ public class RegistrationActivity extends AppCompatActivity {
         etConfirmPassword = findViewById(R.id.et_confirm_password);
         rgRole = findViewById(R.id.rg_role);
         btnRegister = findViewById(R.id.btn_register);
+        btnBackToLogin = findViewById(R.id.btn_back_to_login);
 
         btnRegister.setOnClickListener(v -> handleRegistration());
+        btnBackToLogin.setOnClickListener(v -> finish());
     }
 
     private void handleRegistration() {
